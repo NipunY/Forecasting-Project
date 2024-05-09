@@ -1,0 +1,144 @@
+OPEN DATA "C:\Users\HP\Downloads\housing starts 1970 2018.xlsx"
+CALENDAR(M) 1970:1
+DATA(FORMAT=XLSX,ORG=COLUMNS) 1970:01 2018:11 STARTS
+
+*2 - Graphing Starts series
+GRAPH(STYLE=LINE,HEADER="Housing Starts Series") 1
+# STARTS
+
+*3 - The graph is inconclusive to see any trend.
+*4 - Running a simple linear time Trend Model
+SET TIME = T
+LINREG STARTS
+# Constant TIME
+
+Linear Regression - Estimation by Least Squares
+Dependent Variable STARTS
+Monthly Data From 1970:01 To 2018:11
+Usable Observations                       587
+Degrees of Freedom                        585
+Centered R^2                        0.0029220
+R-Bar^2                             0.0012176
+Uncentered R^2                      0.9231999
+Mean of Dependent Variable       20026.231628
+Std Error of Dependent Variable   5790.165884
+Standard Error of Estimate        5786.639755
+Sum of Squared Residuals          19588841797
+Regression F(1,585)                    1.7144
+Significance Level of F             0.1909316
+Log Likelihood                     -5917.2764
+Durbin-Watson Statistic                0.2689
+
+    Variable                        Coeff      Std Error      T-Stat      Signif
+************************************************************************************
+1.  Constant                     19483.653936   478.291341     40.73595  0.00000000
+2.  TIME                             1.845502     1.409485      1.30934  0.19093157
+
+*5 - Defining dummy variables
+SEASONAL DEC
+SET NOV = DEC{-1}
+SET OCT = DEC{-2}
+SET SEP = DEC{-3}
+SET AUG = DEC{-4}
+SET JUL = DEC{-5}
+SET JUN = DEC{-6}
+SET MAY = DEC{-7}
+SET APR = DEC{-8}
+SET MAR = DEC{-9}
+SET FEB = DEC{-10}
+SET JAN = DEC{-11}
+
+*6 - Running Seasonal Regression
+LINREG STARTS / RESIDS
+# DEC NOV OCT SEP AUG JUL JUN MAY APR MAR FEB JAN
+
+Linear Regression - Estimation by Least Squares
+Dependent Variable STARTS
+Monthly Data From 1970:01 To 2018:11
+Usable Observations                       587
+Degrees of Freedom                        575
+Centered R^2                        0.4088783
+R-Bar^2                             0.3975699
+Uncentered R^2                      0.9544687
+Mean of Dependent Variable       20026.231628
+Std Error of Dependent Variable   5790.165884
+Standard Error of Estimate        4494.116688
+Sum of Squared Residuals          11613323762
+Regression F(11,575)                  36.1570
+Significance Level of F             0.0000000
+Log Likelihood                     -5763.8326
+Durbin-Watson Statistic                0.1564
+
+    Variable                        Coeff      Std Error      T-Stat      Signif
+************************************************************************************
+1.  DEC                          14722.317690   648.669870     22.69616  0.00000000
+2.  NOV                          17953.487785   642.016670     27.96421  0.00000000
+3.  OCT                          21644.310305   642.016670     33.71300  0.00000000
+4.  SEP                          21214.673464   642.016670     33.04380  0.00000000
+5.  AUG                          22634.936796   642.016670     35.25600  0.00000000
+6.  JUL                          22845.483817   642.016670     35.58394  0.00000000
+7.  JUN                          23985.222536   642.016670     37.35919  0.00000000
+8.  MAY                          24120.965240   642.016670     37.57062  0.00000000
+9.  APR                          23088.857158   642.016670     35.96302  0.00000000
+10. MAR                          19884.430602   642.016670     30.97183  0.00000000
+11. FEB                          14347.587770   642.016670     22.34769  0.00000000
+12. JAN                          13764.263233   642.016670     21.43911  0.00000000
+
+*7 - There is evdience for seasonality as centered R-Squared is 0.4088783
+
+*8 - Autocorrelations and Partial Correlations of the residuals
+@bjident resids
+
+*9 - Rerunning the model till Dec 2017
+LINREG STARTS * 2017:12
+# DEC NOV OCT SEP AUG JUL JUN MAY APR MAR FEB JAN
+
+Linear Regression - Estimation by Least Squares
+Dependent Variable STARTS
+Monthly Data From 1970:01 To 2017:12
+Usable Observations                       576
+Degrees of Freedom                        564
+Centered R^2                        0.4049489
+R-Bar^2                             0.3933433
+Uncentered R^2                      0.9536909
+Mean of Dependent Variable       20025.476497
+Std Error of Dependent Variable   5822.494063
+Standard Error of Estimate        4535.034227
+Sum of Squared Residuals          11599525990
+Regression F(11,564)                  34.8925
+Significance Level of F             0.0000000
+Log Likelihood                     -5660.9278
+Durbin-Watson Statistic                0.1539
+
+    Variable                        Coeff      Std Error      T-Stat      Signif
+************************************************************************************
+1.  DEC                          14722.317690   654.575808     22.49139  0.00000000
+2.  NOV                          17949.518775   654.575808     27.42160  0.00000000
+3.  OCT                          21657.179249   654.575808     33.08582  0.00000000
+4.  SEP                          21217.558307   654.575808     32.41421  0.00000000
+5.  AUG                          22631.760469   654.575808     34.57470  0.00000000
+6.  JUL                          22884.781386   654.575808     34.96124  0.00000000
+7.  JUN                          24016.039693   654.575808     36.68947  0.00000000
+8.  MAY                          24115.085339   654.575808     36.84078  0.00000000
+9.  APR                          23102.608328   654.575808     35.29401  0.00000000
+10. MAR                          19845.427063   654.575808     30.31800  0.00000000
+11. FEB                          14366.422932   654.575808     21.94768  0.00000000
+12. JAN                          13797.018727   654.575808     21.07780  0.00000000
+
+*10 - Forecasting for Jan-Nov 2018
+UFORECAST(FROM=2018:01,TO=2018:11,PRINT) FORECASTS
+
+ Entry     STARTS
+ 2018:01 13797.01873
+ 2018:02 14366.42293
+ 2018:03 19845.42706
+ 2018:04 23102.60833
+ 2018:05 24115.08534
+ 2018:06 24016.03969
+ 2018:07 22884.78139
+ 2018:08 22631.76047
+ 2018:09 21217.55831
+ 2018:10 21657.17925
+ 2018:11 17949.51878
+
+*11- Based on the estimates, the best forecast month was Sept 2018 with a 0.67% difference while the worst forecast month was Jan 2018 with a 13.16% difference
